@@ -150,7 +150,7 @@
             for (var w=0; w < this.activeBlock.self[0].length; w++) {
               for (var h=this.activeBlock.self.length; h > 0; h--) {
                 var x = this.activeBlock.x + w + xd;
-                if (x < 0 || x >= this.width || this.activeBlock.self[h - 1][w] === 1  && b[this.activeBlock.y + h][x]) {
+                if (x < 0 || x >= this.width || this.activeBlock.self[(this.activeBlock.self.length - h)][w] === 1  && b[Math.min(this.activeBlock.y + h - 1, this.height -1)][x]) {
                   this.toggleBlock(true);
                   return false;
                 }
