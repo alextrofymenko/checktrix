@@ -15,7 +15,7 @@
             break;
 
             case 38: // up
-            console.log('up');
+            game.board.turnBlock();
             break;
 
             case 39: // right
@@ -33,7 +33,7 @@
       });
 
       var timer = 1000;
-      var seq = [new Block(7), new Block(8)];
+      var seq = [new Block(7), new Block(12), new Block(1), new Block(0)];
 
       function Game() {
         this.board = new Board();
@@ -41,8 +41,6 @@
         this.over = false;
 
         this.pulse = function() {
-          console.log('pulse');
-
           if (!this.over && this.board.getBlock()) {
             this.board.dropBlock();
             this.board.draw();
@@ -131,7 +129,7 @@
               if (seq.length === 0)
                 return false;
 
-              gActiveBlock = this.activeBlock = seq[0];
+              this.activeBlock = seq[0];
               seq = seq.slice(1);
             } else
               this.activeBlock = new Block(Math.floor(Math.random() * 6));
@@ -174,6 +172,17 @@
           return true;
         }
 
+        this.turnBlock = function() {
+          this.toggleBlock(false);
+          var currentY = this.activeBlock.y;
+          var currentX = this.activeBlock.x;
+          this.activeBlock = new Block(this.activeBlock.next);
+          this.activeBlock.y = currentY;
+          this.activeBlock.x = currentX;
+          this.toggleBlock(true);
+          this.draw();
+        }
+
         function input(h,w,checked) {
           return '<input id="' + h + 'x' + w + '" type="checkbox" disabled="disabled" style="margin: -1px;"/>';
         }
@@ -192,8 +201,7 @@
       }
 
       function Block(n) {
-        this.center;
-        this.x, this.y;
+        this.next;
 
         switch(n){
           case 0:
@@ -201,6 +209,7 @@
               [1, 1],
               [1, 1]
             ];
+            this.next = 0;
             break;
           case 1:
             this.self = [
@@ -208,51 +217,134 @@
               [1, 0],
               [1, 1]
             ];
+            this.next = 2;
             break;
           case 2:
+            this.self = [
+              [1, 1, 1],
+              [1, 0, 0]
+            ];
+            this.next = 3;
+            break;
+          case 3:
+            this.self = [
+              [1, 1],
+              [0, 1],
+              [0, 1]
+            ];
+            this.next = 4;
+            break;
+          case 4:
+            this.self = [
+              [0, 0, 1],
+              [1, 1, 1]
+            ];
+            this.next = 1;
+            break;
+          case 5:
             this.self = [
               [0, 1],
               [0, 1],
               [1, 1]
             ];
-            break;
-          case 3:
-            this.self = [
-              [1, 1, 1, 1]
-            ];
-            break;
-          case 4:
-            this.self = [
-              [0, 1, 0],
-              [1, 1, 1]
-            ];
-            break;
-          case 5:
-            this.self = [
-              [1, 1, 0],
-              [0, 1, 1]
-            ];
+            this.next = 6;
             break;
           case 6:
             this.self = [
-              [0, 1, 1],
-              [1, 1, 0]
+              [1, 0, 0],
+              [1, 1, 1]
             ];
+            this.next = 7;
             break;
           case 7:
+            this.self = [
+              [1, 1],
+              [1, 0],
+              [1, 0]
+            ];
+            this.next = 8;
+            break;
+          case 8:
+            this.self = [
+              [1, 1, 1],
+              [0, 0, 1]
+            ];
+            this.next = 5;
+            break;
+          case 9:
+            this.self = [
+              [1, 1, 1, 1]
+            ];
+            this.next = 10;
+            break;
+          case 10:
             this.self = [
               [1],
               [1],
               [1],
               [1]
             ];
+            this.next = 9;
             break;
-          case 8:
+          case 11:
             this.self = [
+              [0, 1, 0],
+              [1, 1, 1]
+            ];
+            this.next = 12;
+            break;
+          case 12:
+            this.self = [
+              [1, 0],
               [1, 1],
+              [1, 0]
+            ];
+            this.next = 13;
+            break;
+          case 13:
+            this.self = [
+              [1, 1, 1],
+              [0, 1, 0]
+            ];
+            this.next = 14;
+            break;
+          case 14:
+            this.self = [
               [0, 1],
+              [1, 1],
               [0, 1]
             ];
+            this.next = 11;
+            break;
+          case 15:
+            this.self = [
+              [1, 1, 0],
+              [0, 1, 1]
+            ];
+            this.next = 16;
+            break;
+          case 16:
+            this.self = [
+              [0, 1],
+              [1, 1],
+              [1, 0]
+            ];
+            this.next = 15;
+            break;
+          case 17:
+            this.self = [
+              [0, 1, 1],
+              [1, 1, 0]
+            ];
+            this.next = 18;
+            break;
+          case 18:
+            this.self = [
+              [1, 0],
+              [1, 1],
+              [0, 1]
+            ];
+            this.next = 17;
             break;
         }
       }
