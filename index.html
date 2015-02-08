@@ -1,0 +1,259 @@
+
+<html>
+	<head>
+		<script src="jquery.min.js"></script>
+	</head>
+	<body>
+		<script>
+			$(function() {
+				var game = new Game();
+			});
+
+			var timer = 100;
+			var seq = [new Block(7), new Block(5)];
+			var gBoard;
+			var gActiveBlock;
+
+			function Game() {
+				gBoard = this.board = new Board();
+				this.board.draw();
+				this.over = false;
+				this.pulse = function() {
+					this.board.draw();
+
+					if (this.board.getBlock()) {
+						this.board.dropBlock();
+						setTimeout((function () { this.pulse(); }).bind(this), 50);
+					} else {
+						$('body').append('<p>game over</p>');
+					}
+				}
+
+				this.pulse();
+			}
+
+			function Board() {
+				this.height = 20;
+				this.width = 10;
+				this.activeBlock = null;
+
+				var b = new Array();
+
+				this.board = b;
+
+				for (var h=this.height-1; h >= 0; h--) {
+					var row = new Array();
+					for (var w=0; w < this.width; w++) {
+						row[w] = false;
+					}
+					b[h] = row;
+				}
+
+				this.draw = function () {
+					for (var h=this.height-1; h >= 0; h--) {
+						for (var w=0; w < this.width; w++) {
+							var chk = $(':checkbox#' + h + 'x' + w);
+							if (chk.length === 0) {
+								$('body').append(input(h,w));
+								if (w === this.width - 1)
+									$('body').append('<br>');
+							}
+
+							chk.prop('checked', b[h][w]);
+						}
+					}
+				}
+
+				this.toggleBlock = function(val) {
+					for (var h=this.activeBlock.self.length; h > 0; h--) {
+						for (var w=0; w < this.activeBlock.self[0].length; w++) {
+							var y = this.activeBlock.y + (this.activeBlock.self.length - h);
+							if (y < this.height) {
+								if (val) {
+									b[y][this.activeBlock.x + w] = this.activeBlock.self[h - 1][w] === 1 || b[y][this.activeBlock.x + w];
+								}
+								else
+									b[y][this.activeBlock.x + w] = this.activeBlock.self[h - 1][w] === 1 ? false : b[y][this.activeBlock.x + w];
+							}
+						}
+					}
+				}
+
+				this.dropBlock = function() {
+					if (this.canMoveBlock(0,-1)) {
+						this.toggleBlock(false);
+						this.activeBlock.y--;
+						this.toggleBlock(true);
+					} else {
+						this.activeBlock = null;
+					}
+				}
+
+				this.getBlock = function() {
+					if (!this.activeBlock) {
+						if (b[this.height - 1][this.width/2])
+							return false;
+
+						if (seq) {
+							if (seq.length === 0)
+								return false;
+
+							gActiveBlock = this.activeBlock = seq[0];
+							seq = seq.slice(1);
+						} else
+							this.activeBlock = new Block(Math.floor(Math.random() * 6));
+
+						this.activeBlock.x = this.width/2;
+						this.activeBlock.y = this.height - 1;
+					}
+
+					return this.activeBlock;
+				}
+
+				this.canDropBlock = function() {
+					if (this.activeBlock.y === 0)
+						return false;
+
+					/// MAKE THIS WORK!
+					for (var h=this.activeBlock.self.length - 1; h >= 0; h--) {
+						for (var w=0; w < this.activeBlock.self[0].length; w++) {
+							var y = Math.min(this.activeBlock.y - 1 + (this.activeBlock.self.length - h), this.height - 1);
+							console.log(
+								h, w, this.activeBlock.self[h][w],
+								y, this.activeBlock.x + w, b[y][this.activeBlock.x + w]);
+							if (this.activeBlock.self[h][w] === 1) {
+								if (b[y][this.activeBlock.x + w])
+									return false;
+								else
+									break;
+							}
+						}
+					}
+
+					return true;
+				}
+
+				this.canMoveBlock = function(xd,yd) {
+					this.toggleBlock(false);
+					var counter = 0;
+
+					if (xd !== 0) {
+						for (var h=this.activeBlock.self.length; h > 0; h--) {
+							for (var w=0; w < this.activeBlock.self[0].length; w++) {
+								var y = this.activeBlock.y + (this.activeBlock.self.length - h);
+								if (b[y][this.activeBlock.x + xd + w]) {
+									this.toggleBlock(true);
+									return toggleBlockfalse;
+								}
+							}
+						}
+					} else if (yd !== 0) {
+						console.log("this.activeBlock.x,this.activeBlock.y",this.activeBlock.x, this.activeBlock.y);
+						for (var h=this.activeBlock.self.length; h > 0; h--) {
+							for (var w=0; w < this.activeBlock.self[0].length; w++) {
+								console.log("h,w",h,w, this.activeBlock.self[h-1][w]);
+								var y = this.activeBlock.y + (this.activeBlock.self.length - h) + yd;
+								try {
+									console.log("y, this.activeBlock.y", y, this.activeBlock.y);
+									console.log("y, this.activeBlock.x + w, b[y][this.activeBlock.x + w]", y, this.activeBlock.x + w, b[y][this.activeBlock.x + w]);
+								} catch ( e) {}
+								// console.log("Next coordinate:", y, ",",this.activeBlock.x + w,
+								// 	(this.activeBlock.self.length - h),w,this.activeBlock.self[this.activeBlock.self.length - h][w],
+								// 	this.activeBlock);
+								if (y < 0 || y < this.height && this.activeBlock.self[h - 1][w] === 1 && b[y][this.activeBlock.x + w]) {
+									this.toggleBlock(true);
+									return false;
+								}
+							}
+						}
+					}
+
+					this.toggleBlock(true);
+					return true;
+				}
+
+				function input(h,w,checked) {
+					return '<input id="' + h + 'x' + w + '" type="checkbox" disabled="disabled" style="margin: -1px;"/>';
+				}
+
+				function drawBlock(block,x,y,clear) {
+					var setChecked = function(val,clear) {
+						return !clear && val === 1;
+					}
+
+					for (var w = 0; w < block.length; w++) {
+						for (var h = 0; h < block[w].length; h++) {
+							$(':checkbox#' + (y + h) + 'x' + (x + w)).prop('checked',setChecked(block[w][h],clear));
+						}
+					}
+				}
+			}
+
+			function Block(n) {
+				this.center;
+				this.x, this.y;
+
+				switch(n){
+					case 0:
+						this.self = [
+							[1, 1],
+							[1, 1]
+						];
+						break;
+					case 1:
+						this.self = [
+							[1, 0],
+							[1, 0],
+							[1, 1]
+						];
+						break;
+					case 2:
+						this.self = [
+							[0, 1],
+							[0, 1],
+							[1, 1]
+						];
+						break;
+					case 3:
+						this.self = [
+							[1, 1, 1, 1]
+						];
+						break;
+					case 4:
+						this.self = [
+							[0, 1, 0],
+							[1, 1, 1]
+						];
+						break;
+					case 5:
+						this.self = [
+							[1, 1, 0],
+							[0, 1, 1]
+						];
+						break;
+					case 6:
+						this.self = [
+							[0, 1, 1],
+							[1, 1, 0]
+						];
+						break;
+					case 7:
+						this.self = [
+							[1],
+							[1],
+							[1],
+							[1]
+						];
+						break;
+					case 8:
+						this.self = [
+							[1, 1],
+							[0, 1],
+							[0, 1]
+						];
+						break;
+				}
+			}
+		</script>
+	</body>
+</htm>
