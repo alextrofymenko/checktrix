@@ -6,7 +6,7 @@
   <body>
     <script>
       $(function() {
-        var game = new Game();
+        game = new Game();
 
         $(document).keydown(function(e) {
           switch(e.which) {
@@ -34,18 +34,18 @@
 
       var timer = 1000;
       var seq = [new Block(7), new Block(8)];
-      var gBoard;
-      var gActiveBlock;
 
       function Game() {
-        gBoard = this.board = new Board();
+        this.board = new Board();
         this.board.draw();
         this.over = false;
+
         this.pulse = function() {
-          this.board.draw();
+          console.log('pulse');
 
           if (!this.over && this.board.getBlock()) {
             this.board.dropBlock();
+            this.board.draw();
             setTimeout((function () { this.pulse(); }).bind(this), timer);
           } else {
             $('body').append('<p>game over</p>');
@@ -54,15 +54,15 @@
 
         this.accelarate = function() {
           if (!this.over && this.board.activeBlock !== null) {
-            this.board.draw();
             this.board.dropBlock();
+            this.board.draw();
           }
         }
 
         this.moveBlock = function(xd) {
           if (!this.over && this.board.activeBlock !== null) {
-            this.board.draw();
             this.board.moveBlock(xd, 0);
+            this.board.draw();
           }
         }
 
@@ -147,11 +147,10 @@
           this.toggleBlock(false);
 
           if (xd !== 0) {
-            //TODO: horizontal canMove
             for (var w=0; w < this.activeBlock.self[0].length; w++) {
               for (var h=this.activeBlock.self.length; h > 0; h--) {
                 var x = this.activeBlock.x + w + xd;
-                if (x < 0 || x >= this.width) {
+                if (x < 0 || x >= this.width || this.activeBlock.self[h - 1][w] === 1  && b[this.activeBlock.y + h][x]) {
                   this.toggleBlock(true);
                   return false;
                 }
