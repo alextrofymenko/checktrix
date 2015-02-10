@@ -15,7 +15,7 @@
             break;
 
             case 38: // up
-            game.board.turnBlock();
+            game.turnBlock();
             break;
 
             case 39: // right
@@ -32,7 +32,7 @@
         });
       });
 
-      var timer = 1000;
+      var timer = 500;
       var seq;
       //seq = [new Block(7), new Block(12), new Block(1), new Block(0)];
 
@@ -62,6 +62,13 @@
         this.moveBlock = function(xd) {
           if (!this.over && this.board.activeBlock !== null) {
             this.board.moveBlock(xd, 0);
+            this.board.draw();
+          }
+        }
+
+        this.turnBlock = function() {
+          if (!this.over && this.board.activeBlock !== null) {
+            this.board.turnBlock();
             this.board.draw();
           }
         }
@@ -175,7 +182,7 @@
           this.activeBlock.x = previousPosition.x;
 
           if (this.detectCollision()) {
-            this.ac = previousPosition;
+            this.activeBlock = previousPosition;
           }
 
           this.toggleBlock(true);
