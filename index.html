@@ -81,16 +81,14 @@
         this.width = 10;
         this.activeBlock = null;
 
-        var b = new Array();
-
-        this.board = b;
+        this.self = new Array();
 
         for (var h = 0; h < this.height; h++) {
           var row = new Array();
           for (var w = 0; w < this.width; w++) {
             row[w] = false;
           }
-          b[h] = row;
+          this.self[h] = row;
         }
 
         this.draw = function () {
@@ -103,7 +101,7 @@
                   $('body').append('<br>');
               }
 
-              chk.prop('checked', b[h][w]);
+              chk.prop('checked', this.self[h][w]);
             }
           }
         }
@@ -114,7 +112,7 @@
               var y = this.activeBlock.y + h;
               var x = this.activeBlock.x + w;
               if (0 <= y < this.height && 0 <= x < this.width) {
-                b[y][x] = this.activeBlock.self[h][w] === 1 ? val : b[y][x];
+                this.self[y][x] = this.activeBlock.self[h][w] === 1 ? val : this.self[y][x];
               }
             }
           }
@@ -130,7 +128,7 @@
 
         this.getBlock = function() {
           if (!this.activeBlock) {
-            if (b[0][this.width/2]) //Starting position not free
+            if (this.self[0][this.width/2]) //Starting position not free
               return false;
 
             if (seq) {
@@ -203,7 +201,7 @@
 
               if (y < 0 || y >= this.height ||
                   x < 0 || x >= this.width  ||
-                  this.activeBlock.self[h][w] === 1 && b[y][x]) {
+                  this.activeBlock.self[h][w] === 1 && this.self[y][x]) {
                 return true;
               }
             }
@@ -214,18 +212,6 @@
 
         function input(h,w,checked) {
           return '<input id="' + h + 'x' + w + '" type="checkbox" disabled="disabled" style="margin: -1px;"/>';
-        }
-
-        function drawBlock(block,x,y,clear) {
-          var setChecked = function(val,clear) {
-            return !clear && val === 1;
-          }
-
-          for (var w = 0; w < block.length; w++) {
-            for (var h = 0; h < block[w].length; h++) {
-              $(':checkbox#' + (y + h) + 'x' + (x + w)).prop('checked',setChecked(block[w][h],clear));
-            }
-          }
         }
       }
 
