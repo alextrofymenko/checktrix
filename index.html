@@ -45,6 +45,7 @@
           if (!this.over && this.board.getBlock()) {
             this.board.dropBlock();
             this.board.draw();
+
             setTimeout((function () { this.pulse(); }).bind(this), timer);
           } else {
             $('body').append('<p>game over</p>');
@@ -113,6 +114,8 @@
         }
 
         this.dropBlock = function() {
+          //If block cannot be dropped further reset active block,
+          // this will trigger a new block on next pulse
           if (!this.moveBlock(0,1)) {
             this.activeBlock = null;
           }
@@ -136,40 +139,45 @@
             this.activeBlock.y = 0;
           }
 
+          this.draw();
           return this.activeBlock;
         }
 
         this.moveBlock = function(xd,yd) {
-          this.toggleBlock(false);
-
           if (xd !== 0 || yd !== 0) {
-            for (var h = 0; h < this.activeBlock.self.length; h++) {
-              for (var w = 0; w < this.activeBlock.self[0].length; w++) {
-                var x = this.activeBlock.x + w + xd;
-                var y = this.activeBlock.y + h + yd;
-                if (y < 0 || y >= this.height ||
-                    x < 0 || x >= this.width  ||
-                    this.activeBlock.self[h][w] === 1 && b[y][x]) {
-                  this.toggleBlock(true);
-                  return false;
-                }
-              }
-            }
+
+            //Toggle block off and move to new position
+            this.toggleBlock(false);
             this.activeBlock.x += xd;
             this.activeBlock.y += yd;
+
+            var collisionDetected = this.detectCollision();
+            if (collisionDetected)
+            {
+              //Revert block to previous position
+              this.activeBlock.x -= xd;
+              this.activeBlock.y -= yd;
+            }
+
+            //Return result of movement
+            this.toggleBlock(true);
+            return !collisionDetected;
           }
 
-          this.toggleBlock(true);
           return true;
         }
 
         this.turnBlock = function() {
           this.toggleBlock(false);
-          var currentY = this.activeBlock.y;
-          var currentX = this.activeBlock.x;
+          var previousPosition = this.activeBlock;
           this.activeBlock = new Block(this.activeBlock.next);
-          this.activeBlock.y = currentY;
-          this.activeBlock.x = currentX;
+          this.activeBlock.y = previousPosition.y;
+          this.activeBlock.x = previousPosition.x;
+
+          if (this.detectCollision()) {
+            this.ac = previousPosition;
+          }
+
           this.toggleBlock(true);
           this.draw();
         }
@@ -178,6 +186,23 @@
           //Assume active block is toggled off and in new position
           //For every tile check if the board is in limits
           //For every non-empty tile check if board is empty
+          for (var h = 0; h < this.activeBlock.self.length; h++) {
+            for (var w = 0; w < this.activeBlock.self[0].length; w++) {
+              var x = this.activeBlock.x + w;
+              var y = this.activeBlock.y + h;
+
+              if (y < 0)
+                continue;
+
+              if (y < 0 || y >= this.height ||
+                  x < 0 || x >= this.width  ||
+                  this.activeBlock.self[h][w] === 1 && b[y][x]) {
+                return true;
+              }
+            }
+          }
+
+          return false;
         }
 
         function input(h,w,checked) {
