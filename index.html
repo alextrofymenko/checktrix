@@ -111,7 +111,8 @@
             for (var w = 0; w < this.activeBlock.self[0].length; w++) {
               var y = this.activeBlock.y + h;
               var x = this.activeBlock.x + w;
-              if (0 <= y < this.height && 0 <= x < this.width) {
+              if (y >= 0 && y < this.height &&
+                  x >= 0 && x < this.width) {
                 this.self[y][x] = this.activeBlock.self[h][w] === 1 ? val : this.self[y][x];
               }
             }
