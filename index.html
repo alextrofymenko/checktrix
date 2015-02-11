@@ -129,7 +129,7 @@
 
         this.getBlock = function() {
           if (!this.activeBlock) {
-            if (this.self[0][this.width/2]) //Starting position not free
+            if (this.self[0][this.width/2 - 1]) //Starting position not free
               return false;
 
             if (seq) {
@@ -141,8 +141,8 @@
             } else
               this.activeBlock = new Block(Math.floor(Math.random() * 18));
 
-            this.activeBlock.x = this.width/2;
-            this.activeBlock.y = 0;
+            this.activeBlock.x = this.width/2 - 1;
+            this.activeBlock.y = 0 - this.activeBlock.self.length;
           }
 
           this.draw();
@@ -189,19 +189,16 @@
         }
 
         this.detectCollision = function() {
-          //Assume active block is toggled off and in new position
-          //For every tile check if the board is in limits
-          //For every non-empty tile check if board is empty
           for (var h = 0; h < this.activeBlock.self.length; h++) {
             for (var w = 0; w < this.activeBlock.self[0].length; w++) {
               var x = this.activeBlock.x + w;
               var y = this.activeBlock.y + h;
 
+              //Ignore part of the board not yet visible
               if (y < 0)
                 continue;
 
-              if (y < 0 || y >= this.height ||
-                  x < 0 || x >= this.width  ||
+              if (y >= this.height || x < 0 || x >= this.width  ||
                   this.activeBlock.self[h][w] === 1 && this.self[y][x]) {
                 return true;
               }
