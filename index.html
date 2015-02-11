@@ -123,6 +123,7 @@
           //If block cannot be dropped further reset active block,
           // this will trigger a new block on next pulse
           if (!this.moveBlock(0,1)) {
+            var linesDestroyed = this.destroyLines();
             this.activeBlock = null;
           }
         }
@@ -206,6 +207,37 @@
           }
 
           return false;
+        }
+
+        this.destroyLines = function() {
+          var linesDestroyed = 0;
+          for (var h = this.height - 1; h > this.height - 5; h--) {
+            var rowComplete = true;
+            for (var w = 0; w < this.width; w++) {
+              if (!this.self[h][w]) {
+                rowComplete = false;
+                break;
+              }
+            }
+
+            if (rowComplete) {
+              linesDestroyed++;
+            } else {
+              break;
+            }
+          }
+
+          if (linesDestroyed > 0) {
+            for (var h = this.height - 1; h >= 0; h--) {
+              for (var w = 0; w < this.width; w++) {
+                this.self[h][w] = h - linesDestroyed < 0 ? false : this.self[h - linesDestroyed][w];
+              }
+            }
+
+            this.draw();
+          }
+
+          return linesDestroyed;
         }
 
         function input(h,w,checked) {
