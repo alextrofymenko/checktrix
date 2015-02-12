@@ -40,13 +40,11 @@
 
       function Game() {
         this.board = new Board();
-        this.board.draw();
         this.score = 0;
 
         this.pulse = function() {
           if (this.board.getBlock()) {
             this.board.dropBlock();
-            this.board.draw();
 
             setTimeout((function () { this.pulse(); }).bind(this), timer);
           } else {
@@ -57,21 +55,18 @@
         this.accelarate = function() {
           if (this.board.getBlock()) {
             this.board.dropBlock();
-            this.board.draw();
           }
         }
 
         this.moveBlock = function(xd) {
           if (this.board.getBlock()) {
             this.board.moveBlock(xd, 0);
-            this.board.draw();
           }
         }
 
         this.turnBlock = function() {
           if (this.board.getBlock()) {
             this.board.turnBlock();
-            this.board.draw();
           }
         }
 
@@ -188,6 +183,7 @@
 
             //Return result of movement
             this.toggleBlock(true);
+            this.draw();
             return !collisionDetected;
           }
 
@@ -230,8 +226,8 @@
         }
 
         this.destroyLines = function() {
-          var linesDestroyed = 0;
-          var firstLineDestroyed = 0;
+          var n = 0;
+          var first = 0;
           for (var h = this.height - 1; h >= 0; h--) {
             var rowComplete = true;
             for (var w = 0; w < this.width; w++) {
@@ -242,26 +238,26 @@
             }
 
             if (rowComplete) {
-              linesDestroyed++;
+              n++;
 
-              if (linesDestroyed === 1) {
-                firstLineDestroyed = h;
+              if (n === 1) {
+                first = h;
               }
-              else if (linesDestroyed === 4)
+              else if (n === 4)
                 break;
             }
           }
 
-          if (linesDestroyed > 0) {
-            for (var h = firstLineDestroyed; h >= 0; h--) {
+          if (n > 0) {
+            for (var h = first; h >= 0; h--) {
               for (var w = 0; w < this.width; w++) {
-                this.self[h][w] = h - linesDestroyed < 0 ? false : this.self[h - linesDestroyed][w];
+                this.self[h][w] = h - n < 0 ? false : this.self[h - n][w];
               }
             }
 
             this.draw();
 
-            $(this).trigger('linesDestroyed', [linesDestroyed]);
+            $(this).trigger('linesDestroyed', [n]);
           }
         }
 
