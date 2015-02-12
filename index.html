@@ -4,6 +4,10 @@
     <script src="jquery.min.js"></script>
   </head>
   <body>
+    <div id="game">
+      <span id="score">0</span><br>
+      <span id="status"></span><br>
+    </div>
     <script>
       $(function() {
         game = new Game();
@@ -11,20 +15,20 @@
         $(document).keydown(function(e) {
           switch(e.which) {
             case 37: // left
-            game.moveBlock(-1);
-            break;
+              game.moveBlock(-1);
+              break;
 
             case 38: // up
-            game.turnBlock();
-            break;
+              game.turnBlock();
+              break;
 
             case 39: // right
-            game.moveBlock(1);
-            break;
+              game.moveBlock(1);
+              break;
 
             case 40: // down
-            game.accelarate();
-            break;
+              game.accelarate();
+              break;
 
             default: return; // exit this handler for other keys
           }
@@ -40,6 +44,7 @@
         this.board = new Board();
         this.board.draw();
         this.over = false;
+        this.score = 0;
 
         this.pulse = function() {
           if (!this.over && this.board.getBlock()) {
@@ -48,7 +53,7 @@
 
             setTimeout((function () { this.pulse(); }).bind(this), timer);
           } else {
-            $('body').append('<p>game over</p>');
+            $('#status').append('<p>Game over!</p>');
           }
         }
 
@@ -73,6 +78,27 @@
           }
         }
 
+        $(this.board).bind('linesDestroyed', { score: this.score }, function(event, n) {
+          if (n > 0) {
+            switch (n) {
+              case 1:
+                event.data.score += 40;
+                break;
+              case 2:
+                event.data.score += 100;
+                break;
+              case 3:
+                event.data.score += 300;
+                break;
+              case 4:
+                event.data.score += 1200;
+                break;
+            }
+
+            $('#score').text(event.data.score);
+          }
+        });
+
         this.pulse();
       }
 
@@ -96,9 +122,9 @@
             for (var w = 0; w < this.width; w++) {
               var chk = $(':checkbox#' + h + 'x' + w);
               if (chk.length === 0) {
-                $('body').append(input(h,w));
+                $('#game').append(input(h,w));
                 if (w === this.width - 1)
-                  $('body').append('<br>');
+                  $('#game').append('<br>');
               }
 
               chk.prop('checked', this.self[h][w]);
@@ -123,9 +149,11 @@
           //If block cannot be dropped further reset active block,
           // this will trigger a new block on next pulse
           if (!this.moveBlock(0,1)) {
-            var linesDestroyed = this.destroyLines();
             this.activeBlock = null;
+            this.destroyLines();
           }
+
+          return 0;
         }
 
         this.getBlock = function() {
@@ -237,7 +265,7 @@
             this.draw();
           }
 
-          return linesDestroyed;
+          $(this).trigger('linesDestroyed', [linesDestroyed]);
         }
 
         function input(h,w,checked) {
