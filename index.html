@@ -37,17 +37,14 @@
       });
 
       var timer = 500;
-      var seq;
-      //seq = [new Block(7), new Block(12), new Block(1), new Block(0)];
 
       function Game() {
         this.board = new Board();
         this.board.draw();
-        this.over = false;
         this.score = 0;
 
         this.pulse = function() {
-          if (!this.over && this.board.getBlock()) {
+          if (this.board.getBlock()) {
             this.board.dropBlock();
             this.board.draw();
 
@@ -58,21 +55,21 @@
         }
 
         this.accelarate = function() {
-          if (!this.over && this.board.activeBlock !== null) {
+          if (this.board.getBlock()) {
             this.board.dropBlock();
             this.board.draw();
           }
         }
 
         this.moveBlock = function(xd) {
-          if (!this.over && this.board.activeBlock !== null) {
+          if (this.board.getBlock()) {
             this.board.moveBlock(xd, 0);
             this.board.draw();
           }
         }
 
         this.turnBlock = function() {
-          if (!this.over && this.board.activeBlock !== null) {
+          if (this.board.getBlock()) {
             this.board.turnBlock();
             this.board.draw();
           }
