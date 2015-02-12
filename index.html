@@ -239,7 +239,8 @@
 
         this.destroyLines = function() {
           var linesDestroyed = 0;
-          for (var h = this.height - 1; h > this.height - 5; h--) {
+          var firstLineDestroyed = 0;
+          for (var h = this.height - 1; h >= 0; h--) {
             var rowComplete = true;
             for (var w = 0; w < this.width; w++) {
               if (!this.self[h][w]) {
@@ -250,22 +251,26 @@
 
             if (rowComplete) {
               linesDestroyed++;
-            } else {
-              break;
+
+              if (linesDestroyed === 1) {
+                firstLineDestroyed = h;
+              }
+              else if (linesDestroyed === 4)
+                break;
             }
           }
 
           if (linesDestroyed > 0) {
-            for (var h = this.height - 1; h >= 0; h--) {
+            for (var h = firstLineDestroyed; h >= 0; h--) {
               for (var w = 0; w < this.width; w++) {
                 this.self[h][w] = h - linesDestroyed < 0 ? false : this.self[h - linesDestroyed][w];
               }
             }
 
             this.draw();
-          }
 
-          $(this).trigger('linesDestroyed', [linesDestroyed]);
+            $(this).trigger('linesDestroyed', [linesDestroyed]);
+          }
         }
 
         function input(h,w,checked) {
