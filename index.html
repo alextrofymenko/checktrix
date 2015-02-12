@@ -161,14 +161,9 @@
             if (this.self[0][this.width/2 - 1]) //Starting position not free
               return false;
 
-            if (seq) {
-              if (seq.length === 0)
-                return false;
-
-              this.activeBlock = seq[0];
-              seq = seq.slice(1);
-            } else
-              this.activeBlock = new Block(Math.floor(Math.random() * 18));
+            var initialBlocks = [9, 6, 4, 0, 17, 11, 15];
+            var next = initialBlocks[Math.floor(Math.random() * initialBlocks.length)];
+            this.activeBlock = new Block(next);
 
             this.activeBlock.x = this.width/2 - 1;
             this.activeBlock.y = 0 - this.activeBlock.self.length;
