@@ -1,12 +1,20 @@
 
 <html>
   <head>
+    <link rel="stylesheet" href="960.css" />
     <script src="jquery.min.js"></script>
   </head>
   <body>
-    <div id="game">
-      <span id="score">0</span><br>
-      <span id="status"></span><br>
+    <div class="container_12">
+      <h1 class="grid_2 prefix_5 suffix_5" style="text-align: center">Checktrix</h1>
+      <div class="clear"></div>
+
+      <span id="score" class="grid_2 prefix_5 suffix_5" style="text-align: center">0</span>
+      <div class="clear"></div>
+
+      <div id="game" class="grid_2 prefix_4"></div>
+      <div id="next" class="grid_1 suffix_5"></div>
+      <div class="clear"></div>
     </div>
     <script>
       $(function() {
@@ -41,6 +49,10 @@
       function Game() {
         this.board = new Board();
         this.score = 0;
+
+        this.next = new Board();
+        this.next.height = this.next.width = 5;
+        this.next.canvas = $('#next');
 
         this.pulse = function() {
           if (this.board.getBlock()) {
@@ -91,12 +103,27 @@
           }
         });
 
+        $(this.board).bind('nextBlock', { next: this.next }, function(event, n) {
+          if (event.data.next.activeBlock) {
+            event.data.next.toggleBlock(false);
+          }
+
+          event.data.next.setBlock(n, 1, 1);
+          event.data.next.toggleBlock(true);
+          event.data.next.draw();
+        });
+        $(this.board).trigger('nextBlock', [this.board.nextBlock]);
+
         this.pulse();
       }
 
       function Board() {
         this.height = 20;
         this.width = 10;
+        this.canvas = $('#game');
+        this.uid = new Date().getTime();
+
+        this.nextBlock = new Block().random();
         this.activeBlock = null;
 
         this.self = new Array();
@@ -112,11 +139,11 @@
         this.draw = function () {
           for (var h = 0; h < this.height; h++) {
             for (var w = 0; w < this.width; w++) {
-              var chk = $(':checkbox#' + h + 'x' + w);
+              var chk = $(':checkbox#' + this.uid + '_' + h + 'x' + w);
               if (chk.length === 0) {
-                $('#game').append(input(h,w));
+                this.canvas.append(input(this.uid,h,w));
                 if (w === this.width - 1)
-                  $('#game').append('<br>');
+                  this.canvas.append('<br>');
               }
 
               chk.prop('checked', this.self[h][w]);
@@ -148,17 +175,21 @@
           return 0;
         }
 
+        this.setBlock = function(block, x, y) {
+          this.activeBlock = new Block(block);
+
+          this.activeBlock.x = x || this.width/2 - 1;
+          this.activeBlock.y = y || 0 - this.activeBlock.self.length;
+        }
+
         this.getBlock = function() {
           if (!this.activeBlock) {
             if (this.self[0][this.width/2 - 1]) //Starting position not free
               return false;
 
-            var initialBlocks = [9, 6, 4, 0, 17, 11, 15];
-            var next = initialBlocks[Math.floor(Math.random() * initialBlocks.length)];
-            this.activeBlock = new Block(next);
-
-            this.activeBlock.x = this.width/2 - 1;
-            this.activeBlock.y = 0 - this.activeBlock.self.length;
+            this.setBlock(this.nextBlock);
+            this.nextBlock = new Block().random();
+            $(this).trigger('nextBlock', [this.nextBlock]);
           }
 
           this.draw();
@@ -261,13 +292,18 @@
           }
         }
 
-        function input(h,w,checked) {
-          return '<input id="' + h + 'x' + w + '" type="checkbox" disabled="disabled" style="margin: -1px;"/>';
+        function input(uid,h,w,checked) {
+          return '<input id="' + uid + '_' + h + 'x' + w + '" type="checkbox" disabled="disabled" style="margin: -1px;"/>';
         }
       }
 
       function Block(n) {
         this.next;
+
+        this.random = function() {
+          var initialBlocks = [9, 6, 4, 0, 17, 11, 15];
+          return initialBlocks[Math.floor(Math.random() * initialBlocks.length)];
+        }
 
         switch(n){
           case 0:
