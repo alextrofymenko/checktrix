@@ -7,7 +7,7 @@
   <body>
     <h1>Checktrix</h1>
     <h3 id="score">0</h3>
-
+    <h3 id="status"></h3>
 
     <div class="container">
       <div id="board"></div>
@@ -57,7 +57,7 @@
             this.nextPulse = setTimeout((function () { this.pulse(); }).bind(this), timer);
           } else {
             clearTimeout(this.nextPulse);
-            $('#status').append('<p>Game over!</p>');
+            $('#status').text('Game over!');
           }
         }
 
