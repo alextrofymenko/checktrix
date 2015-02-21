@@ -14,9 +14,13 @@
       <div id="glimpse"></div>
     </div>
 
+    <div class="container">
+      <input id="new_game" type="button" value="New game">
+    </div>
+
     <script>
       $(function() {
-        game = new Game();
+        var game = new Game();
 
         $(document).keydown(function(e) {
           switch(e.which) {
@@ -40,6 +44,11 @@
           }
           e.preventDefault(); // prevent the default action (scroll / move caret)
         });
+
+        $('#new_game').click(function () {
+          $(game).trigger('game_over');
+          game = new Game();
+        });
       });
 
       var timer = 500;
@@ -48,7 +57,7 @@
         this.board = new Board();
         this.score = 0;
 
-        this.next = new Glimpse();
+        this.glimpse = new Glimpse();
 
         this.pulse = function() {
           if (this.board.getBlock()) {
@@ -100,22 +109,28 @@
           }
         });
 
-        $(this.board).bind('nextBlock', { next: this.next }, function(event, n) {
-          if (event.data.next.activeBlock) {
-            event.data.next.toggleBlock(false);
+        $(this.board).bind('nextBlock', { glimpse: this.glimpse }, function(event, n) {
+          if (event.data.glimpse.activeBlock) {
+            event.data.glimpse.toggleBlock(false);
           }
 
-          event.data.next.setBlock(n, 1, 1);
-          event.data.next.toggleBlock(true);
-          event.data.next.draw();
+          event.data.glimpse.setBlock(n, 1, 1);
+          event.data.glimpse.toggleBlock(true);
+          event.data.glimpse.draw();
         });
         $(this.board).trigger('nextBlock', [this.board.nextBlock]);
+
+        $(this).bind('game_over', { game: this }, function (event) {
+          clearTimeout(event.data.game.nextPulse);
+          event.data.game.board.canvas.html('');
+          event.data.game.glimpse.canvas.html('');
+          $('#status').text('');
+        });
 
         this.pulse();
       }
 
       function Grid(height, width, canvas) {
-        this.uid = Math.floor((1 + Math.random()) * 0x10000);
         this.height = height;
         this.width = width;
         this.canvas = canvas;
@@ -130,6 +145,8 @@
           }
           this.self[h] = row;
         }
+
+        console.log(this.self);
 
         this.draw = function () {
           for (var h = 0; h < this.height; h++) {
@@ -172,9 +189,13 @@
         }
       }
 
-      Board.prototype = new Grid(20, 10, $('#board'));
+      Board.prototype = new Grid();
       Board.prototype.constructor = Board;
       function Board() {
+        Grid.call(this, 20, 10, $('#board'));
+
+        this.uid = Math.floor((1 + Math.random()) * 0x10000);
+
         this.nextBlock = new Block().random();
 
         this.dropBlock = function() {
@@ -299,9 +320,13 @@
         }
       }
 
-      Glimpse.prototype = new Grid(5, 5, $('#glimpse'));
+      Glimpse.prototype = new Grid();
       Glimpse.prototype.constructor = Glimpse;
-      function Glimpse() {}
+      function Glimpse() {
+        Grid.call(this, 5, 5, $('#glimpse'));
+
+        this.uid = Math.floor((1 + Math.random()) * 0x10000);
+      }
 
       function Block(n) {
         this.next;
@@ -456,6 +481,13 @@
             break;
         }
       }
+
+      function create(parent, args) {
+        var fn = function() {};
+        fn.prototype = parent;
+        return new fn();
+      }
+
     </script>
   </body>
 </htm>
